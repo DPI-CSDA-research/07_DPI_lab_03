@@ -13,8 +13,8 @@ class SampleGenerator:
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # 2
                 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],  # 3
                 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],  # 4
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # 5
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # 6
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 0],  # 5
+                [1, 1, 1, 1, 1, 1, 1, 1, 1, 0],  # 6
                 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],  # 7
                 [1, 1, 0, 0, 0, 0, 0, 0, 0, 0],  # 8
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # 9
@@ -47,8 +47,50 @@ class SampleGenerator:
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],  # 10
             ]
         ]
+
+        source_bipolar = [
+            [  # E
+                # 1  2   3   4   5   6   7   8   9  10
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 1
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 2
+                [1,  1, -1, -1, -1, -1, -1, -1, -1, -1],    # 3
+                [1,  1, -1, -1, -1, -1, -1, -1, -1, -1],    # 4
+                [1,  1,  1,  1,  1,  1,  1,  1,  1, -1],    # 5
+                [1,  1,  1,  1,  1,  1,  1,  1,  1, -1],    # 6
+                [1,  1, -1, -1, -1, -1, -1, -1, -1, -1],    # 7
+                [1,  1, -1, -1, -1, -1, -1, -1, -1, -1],    # 8
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 9
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 10
+            ],
+            [  # O
+                # 1  2   3   4   5   6   7   8   9  10
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 1
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 2
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 3
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 4
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 5
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 6
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 7
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 8
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 9
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 10
+            ],
+            [  # [sha]
+                # 1  2   3   4   5   6   7   8   9  10
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 1
+                [1,  1, -1, -1, -1, -1, -1, -1,  1,  1],    # 2
+                [1,  1, -1, -1,  1,  1, -1, -1,  1,  1],    # 3
+                [1,  1, -1, -1,  1,  1, -1, -1,  1,  1],    # 4
+                [1,  1, -1, -1,  1,  1, -1, -1,  1,  1],    # 5
+                [1,  1, -1, -1,  1,  1, -1, -1,  1,  1],    # 6
+                [1,  1, -1, -1,  1,  1, -1, -1,  1,  1],    # 7
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 8
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 9
+                [1,  1,  1,  1,  1,  1,  1,  1,  1,  1],    # 10
+            ]
+        ]
         result = []
-        for item in source:
+        for item in source_bipolar:
             result.append(numpy.array(item, dtype=int))
         return result
 
@@ -59,10 +101,12 @@ class NoiseGenerator:
         if samples < 0:
             raise ValueError
         if samples == 1:
-            return numpy.where(numpy.random.rand(*img.shape) < prob, 1 - img, img)
+            return numpy.where(numpy.random.rand(*img.shape) < prob, -img, img)
+            # return numpy.where(numpy.random.rand(*img.shape) < prob, 1 - img, img)
         result = []
         for i in range(samples):
-            result.append(numpy.where(numpy.random.rand(*img.shape) < prob, 1 - img, img))
+            result.append(numpy.where(numpy.random.rand(*img.shape) < prob, -img, img))
+            # result.append(numpy.where(numpy.random.rand(*img.shape) < prob, 1 - img, img))
         return result
 
 
@@ -117,20 +161,28 @@ def lab():
         for i in range(int(10e4)):
             current = network.sync_step(prev_state)
             if numpy.all(prev_state == current):
-                plot_content.append(numpy.reshape(prev_state, newshape=(10, 10)))
                 break
             prev_state = current
         else:
             print(f"Step limit exceeded")
-        plot_content.append(numpy.reshape(item, newshape=(10, 10)))
-        break
+        plot_content.append(
+            tuple((
+                numpy.reshape(item, newshape=(10, 10)),
+                numpy.reshape(prev_state, newshape=(10, 10)))))
+        # break
 
     figures = []
     for item in plot_content:
         fig = plt.figure()
-        axes = fig.add_subplot()
-        axes.imshow(item)
-        axes.set_axis_off()
+        if type(item) is tuple:
+            axes = fig.subplots(len(item), 1)
+            for i in range(len(item)):
+                axes[i].imshow(item[i])
+                axes[i].set_axis_off()
+            pass
+        # axes = fig.add_subplot()
+        # axes.imshow(item)
+        # axes.set_axis_off()
         figures.append(fig)
     plt.show()
     #   flatten dataset and initialize Hopfield network
